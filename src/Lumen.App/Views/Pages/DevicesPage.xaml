@@ -1,0 +1,194 @@
+<UserControl x:Class="Lumen.Views.Pages.DevicesPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:v="clr-namespace:Lumen.Views">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="36,64,36,28" MaxWidth="1100" HorizontalAlignment="Left">
+            <TextBlock Text="Устройства" Style="{StaticResource PageTitle}"/>
+            <TextBlock Text="Лампы в сети, сведения о выбранной и проверка зон подсветки" Style="{StaticResource Label}" Margin="0,6,0,24"/>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="18"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- ===== Лампы в сети ===== -->
+                <StackPanel>
+                    <Border Style="{StaticResource Card}" v:Motion.Entrance="0">
+                        <StackPanel>
+                            <Grid>
+                                <TextBlock Text="Лампы" Style="{StaticResource H1}"/>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                    <Button Style="{StaticResource ChipButton}" Command="{Binding DiscoverCommand}"
+                                            ToolTip="Найти лампы в локальной сети">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Style="{StaticResource Icon}" Text="&#xE721;" FontSize="12"/>
+                                            <Grid Margin="8,0,0,0">
+                                                <TextBlock Text="Найти" Visibility="{Binding IsDiscovering, Converter={StaticResource BoolVisInv}}"/>
+                                                <TextBlock Text="Поиск…" Visibility="{Binding IsDiscovering, Converter={StaticResource BoolVis}}"/>
+                                            </Grid>
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Style="{StaticResource ChipButton}" Margin="0" Command="{Binding ToggleAddPanelCommand}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Style="{StaticResource Icon}" Text="&#xE710;" FontSize="12"/>
+                                            <TextBlock Text="по IP" Margin="8,0,0,0"/>
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
+                            </Grid>
+
+                            <ListBox ItemsSource="{Binding Devices}" SelectedItem="{Binding SelectedDevice}" Margin="0,18,0,0"
+                                     ItemContainerStyle="{StaticResource DeviceItemStyle}"
+                                     Background="Transparent" BorderThickness="0" Padding="0"
+                                     ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                <ListBox.Template>
+                                    <ControlTemplate TargetType="ListBox">
+                                        <ItemsPresenter/>
+                                    </ControlTemplate>
+                                </ListBox.Template>
+                                <ListBox.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel/>
+                                    </ItemsPanelTemplate>
+                                </ListBox.ItemsPanel>
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Style="{StaticResource Icon}" Text="&#xE7F4;" FontSize="20" Foreground="{StaticResource Text2}"/>
+                                            <StackPanel Margin="12,0,0,0">
+                                                <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="SemiBold"/>
+                                                <TextBlock Text="{Binding Subtitle}" FontSize="12" Foreground="{StaticResource Text2}" Margin="0,2,0,0"/>
+                                            </StackPanel>
+                                            <Button Style="{StaticResource TinyButton}" Margin="14,0,-6,0" ToolTip="Удалить из списка"
+                                                    Command="{Binding DataContext.RemoveDeviceCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}"
+                                                    Visibility="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}, Converter={StaticResource BoolVis}}">
+                                                <TextBlock Style="{StaticResource Icon}" Text="&#xE711;" FontSize="11" Foreground="{StaticResource Text2}"/>
+                                            </Button>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+
+                            <Grid Margin="0,8,0,0" Visibility="{Binding IsAddPanelOpen, Converter={StaticResource BoolVis}}"
+                                  v:Motion.FadeInOnVisible="True">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Style="{StaticResource Input}" Tag="IP лампы, например 192.168.10.250"
+                                         Text="{Binding ManualIp, UpdateSourceTrigger=PropertyChanged}">
+                                    <TextBox.InputBindings>
+                                        <KeyBinding Key="Enter" Command="{Binding AddManualCommand}"/>
+                                    </TextBox.InputBindings>
+                                </TextBox>
+                                <Button Grid.Column="1" Style="{StaticResource PrimaryButton}" Margin="10,0,0,0"
+                                        Padding="16,10" Content="Добавить" Command="{Binding AddManualCommand}"/>
+                            </Grid>
+
+                            <TextBlock Style="{StaticResource Hint}" Margin="0,10,0,0"
+                                       Text="На лампе должен быть включён LAN Control (приложение Yeelight → лампа → настройки). Поиск идёт по всем сетевым адаптерам."/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- ===== Зоны подсветки ===== -->
+                    <Border Style="{StaticResource Card}" v:Motion.Entrance="2"
+                            Visibility="{Binding CanUseZones, Converter={StaticResource BoolVis}}">
+                        <StackPanel>
+                            <TextBlock Text="Зоны подсветки" Style="{StaticResource H1}"/>
+                            <TextBlock Style="{StaticResource Hint}" Margin="0,8,0,16"
+                                       Text="Проверка на 3 секунды зажжёт слева красный, справа синий. Если на лампе наоборот — включи «Поменять местами»: это влияет на синхронизацию в режиме двух зон."/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Button Style="{StaticResource PrimaryButton}" Padding="18,11" Content="Проверить зоны"
+                                        Command="{Binding TestZonesCommand}"/>
+                                <CheckBox Grid.Column="1" Style="{StaticResource Switch}" Margin="18,0,0,0"
+                                          Content="Поменять местами" IsChecked="{Binding SyncZonesSwap}"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- ===== Сведения о выбранной лампе ===== -->
+                <Border Grid.Column="2" Style="{StaticResource Card}" VerticalAlignment="Top" v:Motion.Entrance="1">
+                    <StackPanel>
+                        <Grid>
+                            <TextBlock Text="Сведения" Style="{StaticResource H1}"/>
+                            <Button Style="{StaticResource ChipButton}" Margin="0" HorizontalAlignment="Right"
+                                    Command="{Binding StartRenameCommand}">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Style="{StaticResource Icon}" Text="&#xE70F;" FontSize="12"/>
+                                    <TextBlock Text="Переименовать" Margin="8,0,0,0"/>
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+
+                        <Grid Margin="0,14,0,0" Visibility="{Binding IsRenaming, Converter={StaticResource BoolVis}}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Style="{StaticResource Input}" Tag="Имя лампы (пусто — название модели)"
+                                     Text="{Binding RenameText, UpdateSourceTrigger=PropertyChanged}">
+                                <TextBox.InputBindings>
+                                    <KeyBinding Key="Enter" Command="{Binding SaveRenameCommand}"/>
+                                    <KeyBinding Key="Escape" Command="{Binding CancelRenameCommand}"/>
+                                </TextBox.InputBindings>
+                            </TextBox>
+                            <Button Grid.Column="1" Style="{StaticResource PrimaryButton}" Margin="10,0,0,0" Padding="16,10"
+                                    Content="Сохранить" Command="{Binding SaveRenameCommand}"/>
+                        </Grid>
+
+                        <Grid Margin="0,14,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/>
+                                <RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Text="Имя" Style="{StaticResource InfoKey}"/>
+                            <TextBlock Grid.Column="1" Text="{Binding SelectedDevice.Title, FallbackValue='—'}" Style="{StaticResource InfoValue}"/>
+                            <TextBlock Grid.Row="1" Text="Модель" Style="{StaticResource InfoKey}"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" Style="{StaticResource InfoValue}">
+                                <Run Text="{Binding ModelName, Mode=OneWay}"/>
+                                <Run Text="{Binding ModelCode, Mode=OneWay, StringFormat=' ({0})'}" Foreground="{StaticResource Text2}"/>
+                            </TextBlock>
+                            <TextBlock Grid.Row="2" Text="Прошивка" Style="{StaticResource InfoKey}"/>
+                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding FirmwareText}" Style="{StaticResource InfoValue}"/>
+                            <TextBlock Grid.Row="3" Text="IP-адрес" Style="{StaticResource InfoKey}"/>
+                            <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                                <TextBlock Text="{Binding SelectedDevice.Host, FallbackValue='—'}" Style="{StaticResource InfoValue}"/>
+                                <Button Style="{StaticResource GhostIcon}" v:Ui.Glyph="&#xE8C8;" Margin="4,0,-6,0"
+                                        ToolTip="Скопировать IP" Command="{Binding CopyIpCommand}"/>
+                            </StackPanel>
+                            <TextBlock Grid.Row="4" Text="ID" Style="{StaticResource InfoKey}"/>
+                            <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding LampIdText}" Style="{StaticResource InfoValue}"
+                                       FontFamily="Cascadia Mono, Consolas" FontSize="12"/>
+                            <TextBlock Grid.Row="5" Text="На связи" Style="{StaticResource InfoKey}"/>
+                            <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding UptimeText}" Style="{StaticResource InfoValue}"/>
+                            <TextBlock Grid.Row="6" Text="Каналы" Style="{StaticResource InfoKey}"/>
+                            <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding ChannelText}" Style="{StaticResource InfoValue}"/>
+                            <TextBlock Grid.Row="7" Text="Статус" Style="{StaticResource InfoKey}"/>
+                            <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding Status}" Style="{StaticResource InfoValue}"
+                                       ToolTip="{Binding Status}"/>
+                        </Grid>
+
+                        <TextBlock Text="Поддерживаемые команды" Style="{StaticResource Label}" FontSize="13" Margin="0,16,0,6"/>
+                        <Border Background="#0AFFFFFF" CornerRadius="10" Padding="12,10">
+                            <TextBlock Text="{Binding SupportText}" TextWrapping="Wrap" FontSize="12" LineHeight="19"
+                                       Foreground="{StaticResource Text2}" FontFamily="Cascadia Mono, Consolas"/>
+                        </Border>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

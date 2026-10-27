@@ -1,0 +1,154 @@
+<Window x:Class="Lumen.Views.TrayFlyout"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:v="clr-namespace:Lumen.Views"
+        Title="Lumen" Width="384" SizeToContent="Height"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        ResizeMode="NoResize" ShowInTaskbar="False" Topmost="True" ShowActivated="True"
+        FontFamily="{StaticResource UiFont}" Foreground="{StaticResource Text}"
+        UseLayoutRounding="True">
+
+    <!-- Отступ 12 — место под тень; панель в стиле быстрых настроек Windows -->
+    <Border x:Name="Panel" Margin="12" CornerRadius="18" Background="#F70B1118"
+            BorderBrush="{StaticResource GlassEdge}" BorderThickness="1" Padding="18,16,18,16">
+        <Border.Effect>
+            <DropShadowEffect ShadowDepth="4" BlurRadius="24" Opacity="0.55" Color="Black"/>
+        </Border.Effect>
+        <Border.RenderTransform>
+            <TranslateTransform x:Name="Shift"/>
+        </Border.RenderTransform>
+
+        <StackPanel>
+            <!-- Заголовок: лампа и связь, кнопка «открыть Lumen» -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock FontFamily="{StaticResource DisplayFont}" FontSize="16" FontWeight="SemiBold"
+                               TextTrimming="CharacterEllipsis"
+                               Text="{Binding SelectedDevice.Title, FallbackValue='Lumen'}"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
+                        <Ellipse Width="7" Height="7" VerticalAlignment="Center">
+                            <Ellipse.Style>
+                                <Style TargetType="Ellipse">
+                                    <Setter Property="Fill" Value="{StaticResource Text3}"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                            <Setter Property="Fill" Value="#2BD47D"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Ellipse.Style>
+                        </Ellipse>
+                        <TextBlock Text="{Binding Status}" FontSize="12" Foreground="{StaticResource Text2}" Margin="8,0,0,0"
+                                   TextTrimming="CharacterEllipsis" MaxWidth="250"/>
+                    </StackPanel>
+                </StackPanel>
+                <Button Grid.Column="1" Style="{StaticResource IconButton}" v:Ui.Glyph="&#xE8A7;" ToolTip="Открыть Lumen"
+                        Click="Open_Click"/>
+            </Grid>
+
+            <!-- Быстрые действия -->
+            <UniformGrid Columns="3" Margin="0,16,-8,0" Style="{StaticResource ControlsPanel}" IsEnabled="{Binding ControlsEnabled}">
+                <CheckBox Style="{StaticResource QuickTile}" Content="Свет" v:Ui.Glyph="&#xE706;" IsChecked="{Binding MainPower}"
+                          v:Ui.Value="{Binding MainBright, StringFormat='{}{0:0} %'}"/>
+                <CheckBox Style="{StaticResource QuickTile}" Content="Подсветка" v:Ui.Glyph="&#xE790;" IsChecked="{Binding BgPower}"
+                          v:Ui.Value="{Binding BgBright, StringFormat='{}{0:0} %'}"/>
+                <CheckBox Style="{StaticResource QuickTile}" Content="Экран" v:Ui.Glyph="&#xE895;" IsChecked="{Binding SyncEnabled}"
+                          v:Ui.Value="{Binding SyncStateText}"/>
+            </UniformGrid>
+
+            <!-- Ползунки -->
+            <StackPanel Margin="0,8,0,0" Style="{StaticResource ControlsPanel}" IsEnabled="{Binding ControlsEnabled}">
+                <Grid Margin="0,12,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="28"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="46"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Style="{StaticResource Icon}" Text="&#xE706;" Foreground="{StaticResource Text2}" ToolTip="Яркость света"/>
+                    <Slider Grid.Column="1" Style="{StaticResource LSlider}" Margin="0" Minimum="1" Maximum="100"
+                            SmallChange="1" LargeChange="10" Value="{Binding MainBright}"/>
+                    <TextBlock Grid.Column="2" Style="{StaticResource Value}" FontSize="13" Text="{Binding MainBright, StringFormat='{}{0:0} %'}"/>
+                </Grid>
+                <Grid Margin="0,6,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="28"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="46"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Style="{StaticResource Icon}" Text="&#xE9CA;" Foreground="{StaticResource Text2}" ToolTip="Температура"/>
+                    <Slider Grid.Column="1" Style="{StaticResource GradientSlider}" Background="{StaticResource CtTrack}" Margin="0"
+                            Minimum="2700" Maximum="6500" SmallChange="50" LargeChange="500" Value="{Binding MainCt}"/>
+                    <TextBlock Grid.Column="2" Style="{StaticResource Value}" FontSize="12" Text="{Binding MainCtText}"/>
+                </Grid>
+                <Grid Margin="0,6,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="28"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="46"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Style="{StaticResource Icon}" Text="&#xE790;" Foreground="{StaticResource Text2}" ToolTip="Яркость подсветки"/>
+                    <Slider Grid.Column="1" Style="{StaticResource LSlider}" Margin="0" Minimum="1" Maximum="100"
+                            SmallChange="1" LargeChange="10" Value="{Binding BgBright}"/>
+                    <TextBlock Grid.Column="2" Style="{StaticResource Value}" FontSize="13" Text="{Binding BgBright, StringFormat='{}{0:0} %'}"/>
+                </Grid>
+
+                <!-- Цвет подсветки: оттенок и образцы -->
+                <Grid Margin="0,6,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="28"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="46"/>
+                    </Grid.ColumnDefinitions>
+                    <Ellipse Width="12" Height="12" Fill="{Binding PreviewBrush}" HorizontalAlignment="Left" ToolTip="Цвет подсветки"/>
+                    <Slider Grid.Column="1" Style="{StaticResource GradientSlider}" Background="{StaticResource HueTrack}" Margin="0"
+                            Minimum="0" Maximum="359" SmallChange="1" LargeChange="15" Value="{Binding BgHue}"/>
+                    <TextBlock Grid.Column="2" Style="{StaticResource Value}" FontSize="12" Text="{Binding BgHue, StringFormat='{}{0:0}°'}"/>
+                </Grid>
+                <ItemsControl ItemsSource="{Binding Swatches}" Margin="22,10,0,0">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Button Cursor="Hand" Focusable="False" ToolTip="{Binding Name}" Margin="0,0,3,0"
+                                    Command="{Binding DataContext.PickSwatchCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                    CommandParameter="{Binding}">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Grid Width="28" Height="28" Background="Transparent">
+                                            <Ellipse x:Name="Ring" Stroke="{StaticResource Text2}" StrokeThickness="1.5" Opacity="0"/>
+                                            <Ellipse Margin="5" Fill="{Binding Brush}"/>
+                                        </Grid>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="Ring" Property="Opacity" Value="1"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+
+            <Border Height="1" Background="#12FFFFFF" Margin="0,12,0,10"/>
+            <Grid>
+                <TextBlock Text="{Binding ActiveEffectName, StringFormat='Эффект: {0}'}" FontSize="12"
+                           Foreground="{StaticResource Text3}" VerticalAlignment="Center"/>
+                <Button Style="{StaticResource ChipButton}" Margin="0" HorizontalAlignment="Right" Click="Open_Click">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Открыть Lumen"/>
+                        <TextBlock Style="{StaticResource Icon}" Text="&#xE76C;" FontSize="10" Margin="8,1,0,0"/>
+                    </StackPanel>
+                </Button>
+            </Grid>
+        </StackPanel>
+    </Border>
+</Window>

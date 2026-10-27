@@ -1,0 +1,44 @@
+# Тег v* (git tag v1.2.0 && git push origin v1.2.0) — тесты, сборка и релиз на GitHub
+# с переносной версией, установщиком и контрольными суммами. Ручной запуск — та же сборка без релиза.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Tests
+        run: dotnet test -c Release
+
+      - name: Inno Setup
+        run: choco install innosetup -y --no-progress
+
+      - name: Build
+        shell: pwsh
+        run: |
+          $version = if ($env:GITHUB_REF_TYPE -eq 'tag') { $env:GITHUB_REF_NAME.TrimStart('v') } else { '' }
+          if ($version) { ./build.ps1 -Version $version } else { ./build.ps1 }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Lumen
+          path: dist/*
+
+      - uses: softprops/action-gh-release@v2
+        if: github.ref_type == 'tag'
+        with:
+          files: dist/*
+          generate_release_notes: true

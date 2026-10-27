@@ -1,0 +1,10 @@
+bin/
+obj/
+dist/
+publish/
+artifacts/
+.vs/
+.idea/
+*.user
+*.DotSettings.user
+TestResults/

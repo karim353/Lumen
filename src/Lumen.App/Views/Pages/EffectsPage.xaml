@@ -1,0 +1,125 @@
+<UserControl x:Class="Lumen.Views.Pages.EffectsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:v="clr-namespace:Lumen.Views">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="36,64,36,28" MaxWidth="1100" HorizontalAlignment="Left"
+                    Style="{StaticResource ControlsPanel}" IsEnabled="{Binding ControlsEnabled}">
+            <TextBlock Text="Эффекты" Style="{StaticResource PageTitle}"/>
+            <TextBlock Text="Подсветку анимирует сама лампа — эффект продолжит работать даже после закрытия Lumen"
+                       Style="{StaticResource Label}" Margin="0,6,0,24"/>
+
+            <!-- Плитки: каждая проигрывает цвета своего эффекта -->
+            <ItemsControl ItemsSource="{Binding Effects}" Margin="0,0,-14,0" v:Motion.Entrance="0">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Columns="4"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Button Cursor="Hand" Focusable="False" Margin="0,0,14,14"
+                                Command="{Binding DataContext.StartEffectCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                CommandParameter="{Binding}">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="Bd" CornerRadius="20" Height="168" BorderThickness="1"
+                                            BorderBrush="#16FFFFFF" RenderTransformOrigin="0.5,0.5" ClipToBounds="True"
+                                            TextElement.Foreground="{StaticResource Text}">
+                                        <Border.Background>
+                                            <SolidColorBrush Color="{StaticResource C.Bg2}"/>
+                                        </Border.Background>
+                                        <Border.RenderTransform>
+                                            <ScaleTransform x:Name="Lift"/>
+                                        </Border.RenderTransform>
+                                        <Grid>
+                                            <!-- Свечение цвета эффекта снизу плитки -->
+                                            <Ellipse x:Name="Tint" Width="260" Height="170" VerticalAlignment="Bottom" Margin="0,0,0,-90"
+                                                     Opacity="0.55" Fill="{Binding Preset, Converter={StaticResource EffectPreview}}">
+                                                <Ellipse.Effect>
+                                                    <BlurEffect Radius="40"/>
+                                                </Ellipse.Effect>
+                                            </Ellipse>
+                                            <StackPanel VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Glyph}" FontSize="30" FontFamily="{StaticResource GlyphFont}"
+                                                           HorizontalAlignment="Center"/>
+                                                <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="SemiBold"
+                                                           HorizontalAlignment="Center" Margin="0,10,0,0"/>
+                                                <Border Width="44" Height="5" CornerRadius="2.5" Margin="0,12,0,0"
+                                                        Background="{Binding Preset, Converter={StaticResource EffectPreview}}"/>
+                                            </StackPanel>
+                                            <Border x:Name="ActiveBadge" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="12"
+                                                    Background="{StaticResource Accent}" CornerRadius="8" Padding="8,2" Visibility="Collapsed">
+                                                <TextBlock Text="ИДЁТ" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource AccentInk}"/>
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Trigger.EnterActions>
+                                                <BeginStoryboard>
+                                                    <Storyboard>
+                                                        <DoubleAnimation Storyboard.TargetName="Lift" Storyboard.TargetProperty="ScaleX" To="1.04" Duration="0:0:0.2" EasingFunction="{StaticResource EaseOut}"/>
+                                                        <DoubleAnimation Storyboard.TargetName="Lift" Storyboard.TargetProperty="ScaleY" To="1.04" Duration="0:0:0.2" EasingFunction="{StaticResource EaseOut}"/>
+                                                        <DoubleAnimation Storyboard.TargetName="Tint" Storyboard.TargetProperty="Opacity" To="0.9" Duration="0:0:0.25"/>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </Trigger.EnterActions>
+                                            <Trigger.ExitActions>
+                                                <BeginStoryboard>
+                                                    <Storyboard>
+                                                        <DoubleAnimation Storyboard.TargetName="Lift" Storyboard.TargetProperty="ScaleX" To="1" Duration="0:0:0.3" EasingFunction="{StaticResource EaseOut}"/>
+                                                        <DoubleAnimation Storyboard.TargetName="Lift" Storyboard.TargetProperty="ScaleY" To="1" Duration="0:0:0.3" EasingFunction="{StaticResource EaseOut}"/>
+                                                        <DoubleAnimation Storyboard.TargetName="Tint" Storyboard.TargetProperty="Opacity" To="0.55" Duration="0:0:0.35"/>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </Trigger.ExitActions>
+                                        </Trigger>
+                                        <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                            <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource AccentLine}"/>
+                                            <Setter TargetName="ActiveBadge" Property="Visibility" Value="Visible"/>
+                                            <Setter TargetName="Bd" Property="Effect">
+                                                <Setter.Value>
+                                                    <DropShadowEffect ShadowDepth="0" BlurRadius="24" Opacity="0.35" Color="#1FC9F3"/>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </DataTrigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <Border Style="{StaticResource Card}" Margin="0,8,0,0" v:Motion.Entrance="1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <Grid>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Style="{StaticResource Icon}" Text="&#xE916;" Foreground="{StaticResource Text2}"/>
+                                <TextBlock Text="Скорость" Style="{StaticResource Label}" Margin="12,0,0,0"/>
+                            </StackPanel>
+                            <TextBlock Style="{StaticResource Value}" Text="{Binding EffectSpeedText}"/>
+                        </Grid>
+                        <Slider Style="{StaticResource LSlider}" Minimum="0.25" Maximum="3"
+                                SmallChange="0.05" LargeChange="0.25" Value="{Binding EffectSpeed}"/>
+                        <TextBlock Style="{StaticResource Hint}" Margin="0,8,0,0"
+                                   Text="«Дыхание», «Пульс» и «Строб» используют текущий цвет подсветки — выбери его на главной."/>
+                    </StackPanel>
+                    <Button Grid.Column="1" Style="{StaticResource BaseButton}" Margin="28,0,0,0" VerticalAlignment="Center"
+                            Command="{Binding StopEffectCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Icon}" Text="&#xE71A;" FontSize="13"/>
+                            <TextBlock Text="Остановить эффект" Margin="10,0,0,0"/>
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

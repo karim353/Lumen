@@ -1,0 +1,171 @@
+<Window x:Class="Lumen.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:v="clr-namespace:Lumen.Views"
+        xmlns:p="clr-namespace:Lumen.Views.Pages"
+        Title="Lumen"
+        Width="1480" Height="960" MinWidth="1180" MinHeight="700"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None" ResizeMode="CanResize"
+        Background="{StaticResource Bg0}"
+        FontFamily="{StaticResource UiFont}"
+        Foreground="{StaticResource Text}"
+        UseLayoutRounding="True"
+        Icon="/Assets/lumen.ico">
+
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="56" ResizeBorderThickness="6" GlassFrameThickness="0"
+                      CornerRadius="0" UseAeroCaptionButtons="False"/>
+    </WindowChrome.WindowChrome>
+
+    <Grid>
+        <!-- ================= Свечение окна: цвет лампы, медленно дрейфует ================= -->
+        <Canvas x:Name="Aura" IsHitTestVisible="False" ClipToBounds="True">
+            <Ellipse x:Name="AuraLeft" Opacity="0.26">
+                <Ellipse.Fill>
+                    <RadialGradientBrush>
+                        <GradientStop Color="{Binding BackLeftGlow, Source={StaticResource Rig}}" Offset="0"/>
+                        <GradientStop Color="#00000000" Offset="1"/>
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+            </Ellipse>
+            <Ellipse x:Name="AuraRight" Opacity="0.22">
+                <Ellipse.Fill>
+                    <RadialGradientBrush>
+                        <GradientStop Color="{Binding BackRightGlow, Source={StaticResource Rig}}" Offset="0"/>
+                        <GradientStop Color="#00000000" Offset="1"/>
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+            </Ellipse>
+            <Ellipse x:Name="AuraMain" Opacity="0.12">
+                <Ellipse.Fill>
+                    <RadialGradientBrush>
+                        <GradientStop Color="{Binding MainGlow, Source={StaticResource Rig}}" Offset="0"/>
+                        <GradientStop Color="#00000000" Offset="1"/>
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+            </Ellipse>
+        </Canvas>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="240"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- ================= Боковое меню ================= -->
+            <Border Background="#C8060A0F" BorderBrush="#141E29" BorderThickness="0,0,1,0">
+                <DockPanel Margin="18,20,18,22">
+                    <!-- Логотип: «выключатель», который светится цветом подсветки -->
+                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="10,0,0,34">
+                        <Border Width="34" Height="20" CornerRadius="10" VerticalAlignment="Center">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                                    <GradientStop Color="#FF1FC9F3" Offset="0"/>
+                                    <GradientStop Color="{Binding BackRight, Source={StaticResource Rig}}" Offset="1.3"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <Border.Effect>
+                                <DropShadowEffect ShadowDepth="0" BlurRadius="14" Opacity="0.7" Color="#1FC9F3"/>
+                            </Border.Effect>
+                            <Ellipse Width="14" Height="14" Fill="White" HorizontalAlignment="Right" Margin="0,0,3,0"/>
+                        </Border>
+                        <TextBlock Text="Lumen" FontFamily="{StaticResource DisplayFont}" FontSize="21" FontWeight="SemiBold"
+                                   Margin="12,0,0,2" VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Низ: связь и версия -->
+                    <StackPanel DockPanel.Dock="Bottom" Margin="10,0,0,0">
+                        <Border Height="1" Background="#141E29" Margin="-10,0,0,18"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="8" Height="8" VerticalAlignment="Center">
+                                <Ellipse.Style>
+                                    <Style TargetType="Ellipse">
+                                        <Setter Property="Fill" Value="{StaticResource Text3}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                                <Setter Property="Fill" Value="#2BD47D"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Ellipse.Style>
+                            </Ellipse>
+                            <TextBlock Margin="10,0,0,0" FontSize="13" VerticalAlignment="Center">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Text" Value="Нет связи"/>
+                                        <Setter Property="Foreground" Value="{StaticResource Text3}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                                <Setter Property="Text" Value="Подключено"/>
+                                                <Setter Property="Foreground" Value="#2BD47D"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
+                        <TextBlock Text="{Binding SelectedDevice.Host, FallbackValue='—'}" FontSize="12.5"
+                                   Foreground="{StaticResource Text2}" Margin="18,5,0,0"/>
+                        <TextBlock Text="{Binding Version}" FontSize="12" Foreground="{StaticResource Text3}" Margin="0,22,0,0"/>
+                    </StackPanel>
+
+                    <StackPanel>
+                        <Button Style="{StaticResource NavItem}" Content="Главная" v:Ui.Glyph="&#xE80F;"
+                                v:Ui.Selected="{Binding CurrentPage, Converter={StaticResource Is}, ConverterParameter=Home}"
+                                Command="{Binding NavigateCommand}" CommandParameter="Home"/>
+                        <Button Style="{StaticResource NavItem}" Content="Устройства" v:Ui.Glyph="&#xE7F4;"
+                                v:Ui.Selected="{Binding CurrentPage, Converter={StaticResource Is}, ConverterParameter=Devices}"
+                                Command="{Binding NavigateCommand}" CommandParameter="Devices"/>
+                        <Button Style="{StaticResource NavItem}" Content="Эффекты" v:Ui.Glyph="&#xE734;"
+                                v:Ui.Selected="{Binding CurrentPage, Converter={StaticResource Is}, ConverterParameter=Effects}"
+                                Command="{Binding NavigateCommand}" CommandParameter="Effects"/>
+                        <Button Style="{StaticResource NavItem}" v:Ui.Glyph="&#xE895;"
+                                v:Ui.Selected="{Binding CurrentPage, Converter={StaticResource Is}, ConverterParameter=Sync}"
+                                Command="{Binding NavigateCommand}" CommandParameter="Sync">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Синхронизация"/>
+                                <Ellipse Width="6" Height="6" Margin="8,1,0,0" VerticalAlignment="Center" Fill="{StaticResource Accent}"
+                                         Visibility="{Binding IsSyncing, Converter={StaticResource BoolVis}}"/>
+                            </StackPanel>
+                        </Button>
+                        <Button Style="{StaticResource NavItem}" Content="Расписание" v:Ui.Glyph="&#xE787;"
+                                v:Ui.Selected="{Binding CurrentPage, Converter={StaticResource Is}, ConverterParameter=Schedule}"
+                                Command="{Binding NavigateCommand}" CommandParameter="Schedule"/>
+                        <Button Style="{StaticResource NavItem}" Content="Настройки" v:Ui.Glyph="&#xE713;"
+                                v:Ui.Selected="{Binding CurrentPage, Converter={StaticResource Is}, ConverterParameter=Settings}"
+                                Command="{Binding NavigateCommand}" CommandParameter="Settings"/>
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+
+            <!-- ================= Разделы ================= -->
+            <Grid Grid.Column="1">
+                <p:HomePage Visibility="{Binding CurrentPage, Converter={StaticResource EnumVis}, ConverterParameter=Home}"
+                            v:Motion.FadeInOnVisible="True"/>
+                <p:DevicesPage Visibility="{Binding CurrentPage, Converter={StaticResource EnumVis}, ConverterParameter=Devices}"
+                               v:Motion.FadeInOnVisible="True"/>
+                <p:EffectsPage Visibility="{Binding CurrentPage, Converter={StaticResource EnumVis}, ConverterParameter=Effects}"
+                               v:Motion.FadeInOnVisible="True"/>
+                <p:SyncPage Visibility="{Binding CurrentPage, Converter={StaticResource EnumVis}, ConverterParameter=Sync}"
+                            v:Motion.FadeInOnVisible="True"/>
+                <p:SchedulePage Visibility="{Binding CurrentPage, Converter={StaticResource EnumVis}, ConverterParameter=Schedule}"
+                                v:Motion.FadeInOnVisible="True"/>
+                <p:SettingsPage Visibility="{Binding CurrentPage, Converter={StaticResource EnumVis}, ConverterParameter=Settings}"
+                                v:Motion.FadeInOnVisible="True"/>
+            </Grid>
+        </Grid>
+
+        <!-- ================= Кнопки окна ================= -->
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,12,12,0">
+            <Button Style="{StaticResource TitleButton}" Content="&#xE713;" ToolTip="Настройки" FontFamily="{StaticResource IconFont}"
+                    FontSize="13" WindowChrome.IsHitTestVisibleInChrome="True"
+                    Command="{Binding NavigateCommand}" CommandParameter="Settings"/>
+            <Border Width="1" Height="18" Background="#22FFFFFF" Margin="6,0" VerticalAlignment="Center"/>
+            <Button Style="{StaticResource TitleButton}" Content="&#xE921;" ToolTip="Свернуть"
+                    WindowChrome.IsHitTestVisibleInChrome="True" Click="Minimize_Click"/>
+            <Button Style="{StaticResource TitleButton}" Content="&#xE8BB;" ToolTip="Скрыть в трей"
+                    WindowChrome.IsHitTestVisibleInChrome="True" Click="Close_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

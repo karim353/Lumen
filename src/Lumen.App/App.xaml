@@ -1,0 +1,24 @@
+<Application x:Class="Lumen.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:v="clr-namespace:Lumen.Views"
+             ShutdownMode="OnExplicitShutdown">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- Controls.xaml сам подключает Theme.xaml: ему нужны палитра и базовые стили -->
+                <ResourceDictionary Source="Themes/Controls.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <v:EnumIsConverter x:Key="EnumIs"/>
+            <v:EnumToVisibilityConverter x:Key="EnumVis"/>
+            <v:BoolToVisibilityConverter x:Key="BoolVis"/>
+            <v:BoolToVisibilityConverter x:Key="BoolVisInv" Invert="True"/>
+            <v:NumberFormatConverter x:Key="Num"/>
+            <v:NotConverter x:Key="Not"/>
+            <v:EqualsConverter x:Key="Is"/>
+            <v:EffectPreviewBrushConverter x:Key="EffectPreview"/>
+
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

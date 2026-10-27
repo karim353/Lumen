@@ -1,0 +1,161 @@
+<UserControl x:Class="Lumen.Views.Pages.SyncPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:v="clr-namespace:Lumen.Views">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="36,64,36,28" MaxWidth="1100" HorizontalAlignment="Left"
+                    Style="{StaticResource ControlsPanel}" IsEnabled="{Binding ControlsEnabled}">
+            <TextBlock Text="Синхронизация с экраном" Style="{StaticResource PageTitle}"/>
+            <TextBlock Text="Подсветка повторяет цвета картинки: чёрные полосы фильмов и панель задач не учитываются"
+                       Style="{StaticResource Label}" Margin="0,6,0,24"/>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="18"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- ===== Превью и запуск ===== -->
+                <StackPanel>
+                    <Border Style="{StaticResource Card}" v:Motion.Entrance="0">
+                        <StackPanel>
+                            <Border Background="#99000000" CornerRadius="16" BorderThickness="1"
+                                    BorderBrush="#10FFFFFF" Padding="20,30,20,16" ClipToBounds="True">
+                                <StackPanel>
+                                    <Grid Height="40">
+                                        <Border Height="14" CornerRadius="7" Margin="10,0" Opacity="0.85">
+                                            <Border.Background>
+                                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                                    <GradientStop Color="{Binding SyncLeftColor}" Offset="0.25"/>
+                                                    <GradientStop Color="{Binding SyncRightColor}" Offset="0.75"/>
+                                                </LinearGradientBrush>
+                                            </Border.Background>
+                                            <Border.Effect>
+                                                <BlurEffect Radius="26"/>
+                                            </Border.Effect>
+                                        </Border>
+                                        <Border Height="6" CornerRadius="3" Margin="20,0">
+                                            <Border.Background>
+                                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                                    <GradientStop Color="{Binding SyncLeftColor}" Offset="0.25"/>
+                                                    <GradientStop Color="{Binding SyncRightColor}" Offset="0.75"/>
+                                                </LinearGradientBrush>
+                                            </Border.Background>
+                                        </Border>
+                                    </Grid>
+                                    <TextBlock Style="{StaticResource Hint}" HorizontalAlignment="Center" Margin="0,10,0,0"
+                                               Text="{Binding SyncInfo}" Visibility="{Binding IsSyncing, Converter={StaticResource BoolVis}}"/>
+                                    <TextBlock Style="{StaticResource Hint}" HorizontalAlignment="Center" Margin="0,10,0,0"
+                                               Text="Подсветка будет повторять цвета экрана"
+                                               Visibility="{Binding IsSyncing, Converter={StaticResource BoolVisInv}}"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Button Style="{StaticResource SyncButton}" Margin="0,16,0,0"
+                                    Content="{Binding SyncButtonText}" Command="{Binding ToggleSyncCommand}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Монитор — только если их несколько -->
+                    <Border Style="{StaticResource Card}" v:Motion.Entrance="2"
+                            Visibility="{Binding HasSeveralMonitors, Converter={StaticResource BoolVis}}">
+                        <StackPanel>
+                            <TextBlock Text="Монитор" Style="{StaticResource H1}"/>
+                            <ItemsControl ItemsSource="{Binding Monitors}" Margin="0,14,-8,0">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <UniformGrid Rows="1"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button Style="{StaticResource Choice}" Margin="0,0,8,0" HorizontalContentAlignment="Left"
+                                                Command="{Binding DataContext.SelectMonitorCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}" v:Ui.Selected="{Binding IsSelected}">
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="SemiBold"/>
+                                                <TextBlock Text="{Binding Subtitle}" FontSize="12" Foreground="{StaticResource Text2}"
+                                                           Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
+                                            </StackPanel>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Зоны -->
+                    <Border Style="{StaticResource Card}" v:Motion.Entrance="3"
+                            Visibility="{Binding CanUseZones, Converter={StaticResource BoolVis}}">
+                        <StackPanel>
+                            <CheckBox Style="{StaticResource Switch}" IsChecked="{Binding SyncZones}">
+                                <StackPanel>
+                                    <TextBlock Text="Две зоны" FontSize="15" FontWeight="SemiBold"/>
+                                    <TextBlock Text="Левая и правая половины подсветки — по своим половинам экрана"
+                                               Style="{StaticResource Hint}" Margin="0,3,0,0"/>
+                                </StackPanel>
+                            </CheckBox>
+                            <Grid Margin="0,16,0,0" Visibility="{Binding ZonesActive, Converter={StaticResource BoolVis}}"
+                                  v:Motion.FadeInOnVisible="True">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Button Style="{StaticResource ChipButton}" Content="Проверить зоны"
+                                        Command="{Binding TestZonesCommand}" ToolTip="3 секунды: слева красный, справа синий"/>
+                                <CheckBox Grid.Column="1" Style="{StaticResource Switch}" Margin="12,0,0,0"
+                                          Content="Поменять местами" IsChecked="{Binding SyncZonesSwap}"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- ===== Настройки картинки ===== -->
+                <Border Grid.Column="2" Style="{StaticResource Card}" VerticalAlignment="Top" v:Motion.Entrance="1">
+                    <StackPanel>
+                        <TextBlock Text="Картинка" Style="{StaticResource H1}"/>
+
+                        <CheckBox Style="{StaticResource Switch}" Margin="0,18,0,0"
+                                  IsChecked="{Binding SyncFollowBrightness}"
+                                  IsEnabled="{Binding ZonesActive, Converter={StaticResource Not}}">
+                            <StackPanel>
+                                <TextBlock Text="Яркость повторяет картинку" FontSize="14"/>
+                                <TextBlock Style="{StaticResource Hint}" Margin="0,3,0,0"
+                                           Text="Слайдер яркости подсветки на главной задаёт максимум"/>
+                            </StackPanel>
+                        </CheckBox>
+                        <TextBlock Style="{StaticResource Hint}" Margin="0,6,0,0"
+                                   Text="В режиме двух зон лампа держит постоянную яркость."
+                                   Visibility="{Binding ZonesActive, Converter={StaticResource BoolVis}}"/>
+
+                        <Grid Style="{StaticResource RowGrid}">
+                            <TextBlock Text="Частота обновления" Style="{StaticResource Label}"/>
+                            <TextBlock Style="{StaticResource Value}" Text="{Binding SyncFps, StringFormat='{}{0} к/с'}"/>
+                        </Grid>
+                        <Slider Style="{StaticResource LSlider}" Minimum="5" Maximum="30"
+                                SmallChange="1" LargeChange="5" TickFrequency="1" IsSnapToTickEnabled="True"
+                                Value="{Binding SyncFps}"/>
+
+                        <Grid Style="{StaticResource RowGrid}">
+                            <TextBlock Text="Плавность" Style="{StaticResource Label}"/>
+                            <TextBlock Style="{StaticResource Value}" Text="{Binding SyncSmoothingText}"/>
+                        </Grid>
+                        <Slider Style="{StaticResource LSlider}" Minimum="0" Maximum="0.9"
+                                SmallChange="0.05" LargeChange="0.1" Value="{Binding SyncSmoothing}"/>
+
+                        <Grid Style="{StaticResource RowGrid}">
+                            <TextBlock Text="Насыщенность" Style="{StaticResource Label}"/>
+                            <TextBlock Style="{StaticResource Value}" Text="{Binding SyncSaturationText}"/>
+                        </Grid>
+                        <Slider Style="{StaticResource LSlider}" Minimum="1" Maximum="2"
+                                SmallChange="0.05" LargeChange="0.1" Value="{Binding SyncSaturation}"/>
+
+                        <TextBlock Style="{StaticResource Hint}" Margin="0,20,0,0"
+                                   Text="При блокировке экрана и сне синхронизация ставится на паузу, а после перезапуска Lumen продолжается сама. Screen Light Bar Pro работает по UDP, обычные лампы — через music mode (тогда Windows может спросить доступ в брандмауэре)."/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
