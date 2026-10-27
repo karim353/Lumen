@@ -1,0 +1,6 @@
+# В репозитории — LF, в рабочей папке — CRLF (проект только под Windows; cmd.exe надёжнее с CRLF)
+* text=auto eol=crlf
+
+*.ico binary
+*.bmp binary
+*.png binary

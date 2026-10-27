@@ -10,6 +10,12 @@ on:
 permissions:
   contents: write
 
+# Две сборки одного тега (GitHub изредка присылает push дважды) не должны заливать файлы в релиз одновременно:
+# новая отменяет старую
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   release:
     runs-on: windows-latest
